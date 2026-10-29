@@ -1,0 +1,532 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mechanics & Materials Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Familjen+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lab-bench pages — sticky spec-referenced tab strip; each topic = oscilloscope-style sim + breakdown side by side, flip-card questions beneath. */
+:root{
+  --paper:#f4f7f6; --surface:#ffffff; --ink:#16212c; --muted:#56636f; --line:#d5dde2; --grid:#e6edf0;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa; --wave2:#cf5c17; --node:#c2263d; --good:#1b7a4c; --good-soft:#e2f3ea; --warn-soft:#fbeee4;
+  --f-display:"Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f151b; --surface:#151d25; --ink:#e5ecf1; --muted:#93a1ad; --line:#2a3540; --grid:#1c2630;
+  --accent:#72a6ff; --accent-soft:#1a2a44; --wave2:#ff9a5c; --node:#ff6b80; --good:#4cc38a; --good-soft:#15302a; --warn-soft:#33241a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f151b; --surface:#151d25; --ink:#e5ecf1; --muted:#93a1ad; --line:#2a3540; --grid:#1c2630;
+  --accent:#72a6ff; --accent-soft:#1a2a44; --wave2:#ff9a5c; --node:#ff6b80; --good:#4cc38a; --good-soft:#15302a; --warn-soft:#33241a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:28px 14px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4.4vw,42px);line-height:1.08;margin:6px 0 8px;text-wrap:balance;letter-spacing:-.01em}
+h1 .sig{display:inline-block;vertical-align:middle;margin-left:6px}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+h2{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:18px;margin:0 0 8px}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.tabrow{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding-block:8px 0}
+.tab{flex:0 0 auto;border:1px solid transparent;border-bottom:none;background:none;color:var(--muted);font:inherit;cursor:pointer;padding:8px 14px 10px;border-radius:8px 8px 0 0;text-align:left;display:flex;flex-direction:column;gap:1px;position:relative;top:1px}
+.tab .ref{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em}
+.tab .nm{font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--ink)}
+.tab:hover .nm{color:var(--accent)}
+.tab[aria-selected="true"]{background:var(--surface);border-color:var(--line);color:var(--accent)}
+.tab[aria-selected="true"] .nm{color:var(--accent)}
+.tab.practice .nm::before{content:"✎ ";}
+.tab:focus-visible,button:focus-visible,input:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{padding-block:22px 60px}
+.panel-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px 20px;margin-bottom:18px}
+.panel-head p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.lab{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.lab{grid-template-columns:minmax(0,1fr)}}
+
+.scope{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.scope-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.scope canvas{display:block;width:100%}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 18px;padding:14px 14px 4px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
+.ctl label output{font-family:var(--f-mono);color:var(--ink);font-size:13px}
+.ctl input[type=range]{width:100%;accent-color:var(--accent);margin:4px 0 0}
+.toggles{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 4px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:var(--surface);color:var(--muted);font:inherit;font-size:14px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.check{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);padding:6px 4px}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);margin-top:12px}
+.readout div{background:var(--surface);padding:10px 12px}
+.readout dt{font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em}
+.readout dd{margin:2px 0 0;font-family:var(--f-mono);font-size:15px;font-variant-numeric:tabular-nums}
+.status{padding:10px 14px;font-size:14px;border-top:1px solid var(--line)}
+.status b{font-family:var(--f-display)}
+.pause{border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:12px;font-family:var(--f-mono);padding:3px 10px;border-radius:6px;cursor:pointer}
+
+.notes{display:flex;flex-direction:column;gap:16px;min-width:0}
+.eqbox{background:var(--accent-soft);border-radius:10px;padding:12px 14px}
+.eqbox h3{font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.eq{font-family:var(--f-mono);font-size:15px;display:flex;flex-wrap:wrap;gap:6px 22px}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:12px;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;margin-top:1px}
+.traps{background:var(--warn-soft);border-radius:10px;padding:12px 14px}
+.traps h3{color:var(--wave2);font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.traps ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.try{font-size:14px;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
+.try b{color:var(--ink)}
+
+.qhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin:36px 0 12px;border-top:1px solid var(--line);padding-top:22px}
+.qhead p{margin:0;color:var(--muted);font-size:14px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+@media (max-width:420px){.qgrid{grid-template-columns:minmax(0,1fr)}}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.qcard.flipped{border-color:var(--good);background:linear-gradient(var(--good-soft),var(--good-soft)) top/100% 4px no-repeat, var(--surface)}
+.qmeta{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.qmeta .mk{color:var(--accent)}
+.qcard.flipped .qmeta .side{color:var(--good)}
+.qbody{flex:1;min-width:0}
+.qbody p{margin:0 0 8px}
+.qbody p:last-child{margin-bottom:0}
+.qbody ol,.qbody ul{margin:4px 0 8px;padding-left:20px}
+.qbody .opts{list-style:upper-alpha;padding-left:24px}
+.ans .work{font-family:var(--f-mono);font-size:13.5px;background:var(--paper);border-radius:8px;padding:8px 10px;margin:6px 0;overflow-x:auto;white-space:pre-wrap}
+.ans .final{font-weight:700;color:var(--good)}
+.flip{align-self:flex-start;border:1px solid var(--accent);background:none;color:var(--accent);font:inherit;font-size:14px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer}
+.flip:hover{background:var(--accent);color:var(--surface)}
+.qcard.flipped .flip{border-color:var(--good);color:var(--good)}
+.qcard.flipped .flip:hover{background:var(--good);color:var(--surface)}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tally{margin-left:auto;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.ghost{border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:13px;padding:5px 12px;border-radius:8px;cursor:pointer}
+.tagline{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+sub,sup{font-size:.72em;line-height:0}
+footer{color:var(--muted);font-size:13px;padding-block:0 40px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+
+.extra{padding:12px 14px 2px;display:flex;flex-direction:column;gap:10px}
+.extra select,.extra input[type=number],.extra input[type=text]{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.extra .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.extra .row label{font-size:14px;color:var(--muted)}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--surface);font:inherit;font-size:14px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer}
+.btn.alt{background:none;color:var(--accent)}
+.mini{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mini th,.mini td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left}
+.mini th{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:500}
+.tblwrap{overflow-x:auto}
+.ok{color:var(--good);font-weight:700}.bad{color:var(--node);font-weight:700}
+.crumb{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-decoration:none}
+.crumb:hover{color:var(--accent)}
+</style>
+<div id="app"></div>
+<script>
+/* ---------- shared helpers ---------- */
+const $=id=>document.getElementById(id);
+const sims={},Q={},TOPICS=[];let SECTION={};
+let C={};
+function readTokens(){const s=getComputedStyle(document.documentElement);
+  ['paper','surface','ink','muted','line','grid','accent','accent-soft','wave2','node','good'].forEach(n=>C[n]=s.getPropertyValue('--'+n).trim());}
+function hexRgb(h){h=(h||'#000').replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function alpha(hex,a){const[r,g,b]=hexRgb(hex);return `rgba(${r},${g},${b},${a})`}
+function nmRgb(nm){let r=0,g=0,b=0;
+  if(nm<440){r=-(nm-440)/40;b=1}else if(nm<490){g=(nm-440)/50;b=1}else if(nm<510){g=1;b=-(nm-510)/20}
+  else if(nm<580){r=(nm-510)/70;g=1}else if(nm<645){r=1;g=-(nm-645)/65}else{r=1}
+  let f=nm<420?0.3+0.7*(nm-380)/40:nm>680?0.3+0.7*(780-nm)/100:1;
+  return [Math.round(255*r*f),Math.round(255*g*f),Math.round(255*b*f)];}
+const rgbStr=(c,a=1)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const fmt=(x,d=2)=>Number(x).toFixed(d);
+const SUP='⁰¹²³⁴⁵⁶⁷⁸⁹';
+function sci(x,d=2){if(!isFinite(x))return '—';if(x===0)return'0';let e=Math.floor(Math.log10(Math.abs(x)));let m=x/10**e;if(Math.abs(+m.toFixed(d))>=10){m/=10;e++}
+  if(e>=-2&&e<=3)return (+x.toPrecision(d+1)).toString();
+  return `${m.toFixed(d)} × 10${String(e).replace('-','⁻').replace(/\d/g,c=>SUP[c])}`}
+function sizeCanvas(c,aspect,minH){
+  const w=c.clientWidth||c.parentElement.clientWidth||600; const h=Math.max(minH||0,Math.round(w*aspect));
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(c._w!==w||c._h!==h){c.style.height=h+'px';c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c._w=w;c._h=h}
+  const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+function bg(ctx,w,h,grid=true){ctx.fillStyle=C.surface;ctx.fillRect(0,0,w,h);if(!grid)return;ctx.strokeStyle=C.grid;ctx.lineWidth=1;ctx.beginPath();
+  for(let x=0.5;x<w;x+=20){ctx.moveTo(x,0);ctx.lineTo(x,h)}for(let y=0.5;y<h;y+=20){ctx.moveTo(0,y);ctx.lineTo(w,y)}ctx.stroke();}
+function label(ctx,t,x,y,col,align='center',size=12,weight=500){ctx.fillStyle=col||C.ink;ctx.font=`${weight} ${size}px "JetBrains Mono", ui-monospace, monospace`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillText(t,x,y)}
+function dot(ctx,x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}
+function line(ctx,x1,y1,x2,y2,col,w=1.5,dash){ctx.strokeStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();if(dash)ctx.setLineDash([])}
+function arrowHead(ctx,x,y,ang,s,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-s*Math.cos(ang-0.4),y-s*Math.sin(ang-0.4));ctx.lineTo(x-s*Math.cos(ang+0.4),y-s*Math.sin(ang+0.4));ctx.closePath();ctx.fill()}
+function arrow(ctx,x1,y1,x2,y2,col,w=2,head=9){line(ctx,x1,y1,x2,y2,col,w);if(Math.hypot(x2-x1,y2-y1)>2)arrowHead(ctx,x2,y2,Math.atan2(y2-y1,x2-x1),head,col)}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+/* graph helper: box {x,y,w,h} in px, ranges [min,max] */
+function Plot(ctx,box,xr,yr){const P={
+  X:v=>box.x+(v-xr[0])/(xr[1]-xr[0])*box.w, Y:v=>box.y+box.h-(v-yr[0])/(yr[1]-yr[0])*box.h,
+  axes(xlab,ylab,xt=[],yt=[],xf=v=>v,yf=v=>v){ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();
+    const y0=yr[0]<=0&&yr[1]>=0?P.Y(0):box.y+box.h, x0=xr[0]<=0&&xr[1]>=0?P.X(0):box.x;
+    ctx.moveTo(box.x,y0);ctx.lineTo(box.x+box.w,y0);ctx.moveTo(x0,box.y);ctx.lineTo(x0,box.y+box.h);ctx.stroke();
+    xt.forEach(v=>{const x=P.X(v);line(ctx,x,y0,x,y0+4,C.muted,1);label(ctx,xf(v),x,y0+13,C.muted,'center',10)});
+    yt.forEach(v=>{const y=P.Y(v);line(ctx,x0-4,y,x0,y,C.muted,1);label(ctx,yf(v),x0-7,y,C.muted,'right',10)});
+    if(xlab)label(ctx,xlab,box.x+box.w,y0+(y0>box.y+box.h-20?-10:26),C.muted,'right',10);
+    if(ylab)label(ctx,ylab,x0+6,box.y-8,C.muted,'left',10);},
+  curve(f,col,w=2,a=xr[0],b=xr[1],n=200){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();let first=true;
+    for(let i=0;i<=n;i++){const x=a+(b-a)*i/n,y=f(x);if(!isFinite(y)){first=true;continue}const py=Math.max(box.y-2,Math.min(box.y+box.h+2,P.Y(y)));first?ctx.moveTo(P.X(x),py):ctx.lineTo(P.X(x),py);first=false}ctx.stroke();},
+  pts(arr,col,w=2){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();arr.forEach((p,i)=>i?ctx.lineTo(P.X(p[0]),P.Y(p[1])):ctx.moveTo(P.X(p[0]),P.Y(p[1])));ctx.stroke();}
+ };return P;}
+function segVal(id){const b=document.querySelector(`#${id} button[aria-pressed="true"]`);return b?b.dataset.v:null}
+function setSeg(id,v){document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}
+const num=id=>+$(id).value;
+function setOut(id,txt){const o=$(id+'-o');if(o)o.textContent=txt}
+function setLabel(id,txt){const l=document.querySelector(`label[for="${id}"]`);if(l)l.firstChild.textContent=txt+' '}
+function topic(t){TOPICS.push(t)}
+
+// TITLE: Mechanics & Materials Lab
+SECTION={code:'Section 3.4 Mechanics and materials',name:'mechanics and materials',title:'Mechanics & Materials Lab',
+ lede:'Projectiles, moments, collisions, terminal velocity and how materials stretch and break. Each tab has a simulation, a breakdown of the hard parts and questions with hidden answers.',
+ footer:'Use g = 9.81 m s⁻² unless a question says otherwise.'};
+const G=9.81;
+
+/* ===== PROJECTILES ===== */
+topic({id:'projectiles',ref:'3.4.1.5',name:'Projectile motion',short:'Projectiles',eyebrow:'Motion with uniform acceleration',title:'Projectile motion',
+ intro:'Launch a ball and watch its horizontal and vertical velocity components. Turn on air resistance to compare with the ideal path.',animated:true,
+ bar:'blue = horizontal velocity · orange = vertical velocity',aspect:0.55,minH:250,
+ controls:[{id:'pj-u',label:'Launch speed u',min:5,max:30,step:0.5,value:18,fmt:v=>fmt(v,1)+' m s⁻¹'},{id:'pj-a',label:'Launch angle',min:0,max:85,step:1,value:40,fmt:v=>v+'°'},
+  {id:'pj-h',label:'Launch height',min:0,max:20,step:0.5,value:0,fmt:v=>fmt(v,1)+' m'}],
+ checks:[{id:'pj-drag',label:'Air resistance'}],
+ readouts:[{id:'pj-ux',label:'uₓ = u cos θ'},{id:'pj-uy',label:'u_y = u sin θ'},{id:'pj-t',label:'time of flight'},{id:'pj-r',label:'range'},{id:'pj-hm',label:'max height'}],
+ eqs:['v = u + at','s = ut + ½at²','v² = u² + 2as','s = ½(u + v)t'],
+ steps:['Split the launch velocity into <b>independent</b> components: uₓ = u cos θ and u_y = u sin θ.','<b>Horizontally</b>: no force (ignoring air resistance), so uₓ is constant and x = uₓt.',
+  '<b>Vertically</b>: acceleration is g downwards. Use suvat with a = −9.81 m s⁻² (taking up as positive).','The <b>time</b> links the two directions. Find it from the vertical motion, then use it horizontally.',
+  'At the top, the vertical velocity is zero but the horizontal velocity is not.','With <b>air resistance</b>: lower max height, shorter range, steeper fall, path no longer symmetric.'],
+ traps:['Using u instead of u sin θ in the vertical equations.','Sign errors: pick a positive direction and stick to it.','Saying velocity is zero at the top. Only the vertical component is.','Time to fall depends only on vertical motion, not horizontal speed.'],
+ tryThis:'find the angle that gives the longest range from ground level. Now raise the launch height: does the best angle change?'});
+sims.projectiles=(()=>{let path=[],ideal=[],T=1;
+ function sim(u,a,h0,k){const p=[];let x=0,y=h0,vx=u*Math.cos(a),vy=u*Math.sin(a),t=0;const dt=0.005;p.push([t,x,y,vx,vy]);
+  while(t<20){const v=Math.hypot(vx,vy),ax=-k*v*vx,ay=-G-k*v*vy;vx+=ax*dt;vy+=ay*dt;x+=vx*dt;y+=vy*dt;t+=dt;if(y<0){p.push([t,x,0,vx,vy]);break}p.push([t,x,y,vx,vy])}return p}
+ return{update(){const u=num('pj-u'),a=num('pj-a')*Math.PI/180,h0=num('pj-h'),d=$('pj-drag').checked;ideal=sim(u,a,h0,0);path=d?sim(u,a,h0,0.012):ideal;T=path[path.length-1][0];
+   $('pj-ux').textContent=fmt(u*Math.cos(a))+' m s⁻¹';$('pj-uy').textContent=fmt(u*Math.sin(a))+' m s⁻¹';$('pj-t').textContent=fmt(T)+' s';$('pj-r').textContent=fmt(path[path.length-1][1],1)+' m';
+   $('pj-hm').textContent=fmt(Math.max(...path.map(p=>p[2])),1)+' m';},
+  draw(ctx,w,h,t){bg(ctx,w,h);const xm=Math.max(...ideal.map(p=>p[1]))*1.08+2,ym=Math.max(...ideal.map(p=>p[2]))*1.15+2;const sc=Math.min((w-60)/xm,(h-50)/ym);
+   const X=x=>30+x*sc,Y=y=>h-26-y*sc;line(ctx,0,Y(0),w,Y(0),C.ink,1.5);const h0=num('pj-h');if(h0>0){ctx.fillStyle=C.line;ctx.fillRect(X(0)-24,Y(h0),24,Y(0)-Y(h0))}
+   for(let m=0;m<=xm;m+=xm>60?20:xm>25?10:5){line(ctx,X(m),Y(0),X(m),Y(0)+4,C.muted,1);label(ctx,m+' m',X(m),Y(0)+14,C.muted,'center',9)}
+   if(path!==ideal){ctx.setLineDash([4,5]);ctx.strokeStyle=C.muted;ctx.lineWidth=1.2;ctx.beginPath();ideal.forEach((p,i)=>i?ctx.lineTo(X(p[1]),Y(p[2])):ctx.moveTo(X(p[1]),Y(p[2])));ctx.stroke();ctx.setLineDash([]);label(ctx,'no air resistance',X(ideal[ideal.length-1][1]),Y(0)-12,C.muted,'right',9)}
+   ctx.strokeStyle=alpha(C.ink,0.5);ctx.lineWidth=1.5;ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(X(p[1]),Y(p[2])):ctx.moveTo(X(p[1]),Y(p[2])));ctx.stroke();
+   const tt=t%(T+1.2),i=Math.min(path.length-1,Math.floor(Math.min(tt,T)/0.005)),p=path[i],bx=X(p[1]),by=Y(p[2]),vs=2.4;
+   arrow(ctx,bx,by,bx+p[3]*vs,by,C.accent,2.2,8);arrow(ctx,bx,by,bx,by-p[4]*vs,C.wave2,2.2,8);dot(ctx,bx,by,7,C.ink);
+   label(ctx,'t = '+fmt(p[0])+' s',w-12,16,C.ink,'right',11);label(ctx,'v_y = '+fmt(p[4],1)+' m s⁻¹',w-12,32,C.wave2,'right',11);label(ctx,'vₓ = '+fmt(p[3],1)+' m s⁻¹',w-12,48,C.accent,'right',11);}}})();
+Q.projectiles=[
+ {m:3,q:`<p>A ball is kicked at 15 m s⁻¹ at 30° above the horizontal on level ground. Calculate its time of flight, range and maximum height.</p>`,a:`<div class="work">u_y = 15 sin 30° = 7.5 m s⁻¹ ; uₓ = 15 cos 30° = 13.0 m s⁻¹
+t = 2u_y/g = 15/9.81 = 1.53 s
+range = 13.0 × 1.53 = 19.9 m
+h = u_y²/2g = 7.5²/19.62 = 2.87 m</div><p class="final">1.53 s, 19.9 m, 2.9 m</p>`},
+ {m:4,q:`<p>A stone is thrown horizontally at 12 m s⁻¹ from a 20 m cliff. Calculate how far from the base it lands and its speed on impact.</p>`,a:`<div class="work">t = √(2s/g) = √(40/9.81) = 2.02 s
+x = 12 × 2.02 = 24.2 m
+v_y = gt = 19.8 m s⁻¹
+v = √(12² + 19.8²)</div><p class="final">24 m, 23 m s⁻¹</p>`},
+ {m:1,q:`<p>Explain why the horizontal velocity of a projectile is constant (ignoring air resistance).</p>`,a:`<p>There is no horizontal force acting, so there is no horizontal acceleration.</p>`},
+ {m:3,q:`<p>Describe how air resistance changes the path of a golf ball compared with the ideal path.</p>`,a:`<ul><li>Lower maximum height.</li><li>Shorter range.</li><li>The path is not symmetrical: it comes down more steeply than it went up.</li></ul>`},
+ {m:1,q:`<p>At what launch angle is the range greatest on level ground, ignoring air resistance?</p>`,a:`<p class="final">45°</p>`}];
+
+/* ===== MOMENTS ===== */
+topic({id:'moments',ref:'3.4.1.2',name:'Moments',short:'Moments',eyebrow:'Moments and equilibrium',title:'Moments and the principle of moments',
+ intro:'A 2.0 m beam on a pivot. Load A sits at the left end. Move the pivot and load B until the beam balances. Include the beam\'s own weight to see centre of mass in action.',
+ bar:'g = 9.81 N kg⁻¹ · beam length 2.0 m',aspect:0.48,minH:230,
+ controls:[{id:'mo-pv',label:'Pivot position',min:0.2,max:1.8,step:0.05,value:1,fmt:v=>fmt(v)+' m'},{id:'mo-ma',label:'Mass A (at 0.10 m)',min:0,max:5,step:0.1,value:2,fmt:v=>fmt(v,1)+' kg'},
+  {id:'mo-mb',label:'Mass B',min:0,max:5,step:0.1,value:1,fmt:v=>fmt(v,1)+' kg'},{id:'mo-xb',label:'Position of B',min:0.1,max:1.9,step:0.05,value:1.8,fmt:v=>fmt(v)+' m'}],
+ checks:[{id:'mo-beam',label:'Beam weight 20 N acts at its centre'}],
+ readouts:[{id:'mo-acw',label:'anticlockwise moment'},{id:'mo-cw',label:'clockwise moment'},{id:'mo-net',label:'resultant moment'},{id:'mo-R',label:'pivot reaction'}],status:true,
+ eqs:['moment = F × d (perpendicular)','in equilibrium: Σ CW = Σ ACW','and: Σ up = Σ down','couple = F × separation'],
+ steps:['A <b>moment</b> is force × <b>perpendicular</b> distance from the pivot to the line of action of the force.','<b>Principle of moments</b>: for an object in equilibrium, the sum of clockwise moments about any point = the sum of anticlockwise moments about that point.',
+  'For equilibrium you also need <b>no resultant force</b>: the pivot pushes up with a reaction equal to the total weight.','The weight of a uniform object acts at its <b>centre of mass</b>, at its middle. Include it as a moment.',
+  'Take moments about an unknown force\'s point of application. It then has zero moment and drops out.','A <b>couple</b> is two equal, opposite, parallel forces. Its moment is one force × the perpendicular distance between them.'],
+ traps:['Measuring distance from the end of the beam instead of from the pivot.','Using mass instead of weight (multiply by g).','Forgetting the beam\'s own weight.','Using the length along a slanted beam when the force isn\'t perpendicular to it.'],
+ tryThis:'with the beam weight on, move the pivot to 0.6 m and remove both loads. Which way does it tip? Find a mass B that balances it.'});
+sims.moments={update(){const pv=num('mo-pv'),A=num('mo-ma')*G,B=num('mo-mb')*G,xb=num('mo-xb'),bw=$('mo-beam').checked?20:0;
+  const fs=[[A,0.1],[B,xb],[bw,1.0]];let acw=0,cw=0;fs.forEach(([F,x])=>{const m=F*(x-pv);if(m>0)cw+=m;else acw-=m});this.net=cw-acw;this.s={pv,A,B,xb,bw};
+  $('mo-acw').textContent=fmt(acw)+' N m';$('mo-cw').textContent=fmt(cw)+' N m';$('mo-net').textContent=fmt(Math.abs(this.net))+' N m'+(Math.abs(this.net)<0.05?'':this.net>0?' CW':' ACW');$('mo-R').textContent=fmt(A+B+bw,1)+' N up';
+  $('moments-status').innerHTML=Math.abs(this.net)<0.05?'<b>Balanced.</b> Clockwise and anticlockwise moments are equal.':`<b>Not balanced:</b> the beam turns ${this.net>0?'clockwise (right side down)':'anticlockwise (left side down)'}.`;},
+ draw(ctx,w,h){bg(ctx,w,h);const s=this.s,sc=(w-60)/2,py=h*0.55,px=30+s.pv*sc;const ang=Math.max(-0.22,Math.min(0.22,this.net*0.012));
+  const P=x=>[px+(x-s.pv)*sc*Math.cos(ang),py+(x-s.pv)*sc*Math.sin(ang)];
+  ctx.fillStyle=C.muted;ctx.beginPath();ctx.moveTo(px,py+5);ctx.lineTo(px-16,py+40);ctx.lineTo(px+16,py+40);ctx.fill();line(ctx,px-40,py+40,px+40,py+40,C.ink,2);
+  const a=P(0),b=P(2);ctx.strokeStyle=C.ink;ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.lineCap='butt';
+  for(let m=0;m<=2;m+=0.5){const p=P(m);label(ctx,fmt(m,1),p[0],p[1]+16,C.muted,'center',9)}
+  const box=(x,F,lab,col)=>{if(!F)return;const p=P(x),sz=14+Math.sqrt(F)*2.2;ctx.save();ctx.translate(p[0],p[1]-4);ctx.rotate(ang);ctx.fillStyle=col;ctx.fillRect(-sz/2,-sz,sz,sz);ctx.restore();
+   arrow(ctx,p[0],p[1]+6,p[0],p[1]+6+F*1.4,col,2,8);label(ctx,lab+' '+fmt(F,1)+' N',p[0],p[1]-sz-14,col,'center',10)};
+  box(0.1,s.A,'A',C.accent);box(s.xb,s.B,'B',C.wave2);if(s.bw){const p=P(1);arrow(ctx,p[0],p[1]+4,p[0],p[1]+40,C.good,2,8);label(ctx,'W 20 N',p[0]+4,p[1]+50,C.good,'left',10)}
+  arrow(ctx,px,py+40,px,py+40-0.0001,C.ink,1,1);label(ctx,'R',px+22,py+30,C.ink,'left',11,700);}};
+Q.moments=[
+ {m:2,q:`<p>State the principle of moments.</p>`,a:`<p>For a body in equilibrium, the sum of the clockwise moments about any point equals the sum of the anticlockwise moments about that point.</p>`},
+ {m:3,q:`<p>A uniform 2.0 m plank weighs 40 N. It rests on a pivot 0.50 m from its left end. What downward force at the left end balances it, and what is the pivot reaction?</p>`,a:`<div class="work">weight acts at 1.0 m → 0.50 m right of pivot: CW = 40 × 0.50 = 20 N m
+F × 0.50 = 20 → F = 40 N
+R = 40 + 40</div><p class="final">F = 40 N, R = 80 N</p>`},
+ {m:2,q:`<p>Define a couple and calculate the moment of a couple of two 15 N forces 0.30 m apart.</p>`,a:`<p>A pair of equal and opposite forces acting along parallel but different lines, producing rotation only.</p><p class="final">15 × 0.30 = 4.5 N m</p>`},
+ {m:1,q:`<p>Define centre of mass.</p>`,a:`<p>The point at which the entire weight of an object can be considered to act.</p>`},
+ {m:3,q:`<p>A uniform 4.0 m beam of weight 600 N rests on supports at each end. A person of weight 800 N stands 1.0 m from the left end. Calculate both support forces.</p>`,a:`<div class="work">moments about left support:
+R_R × 4.0 = 600 × 2.0 + 800 × 1.0 = 2000
+R_R = 500 N ; R_L = 1400 − 500</div><p class="final">R_L = 900 N, R_R = 500 N</p>`}];
+
+/* ===== MOMENTUM ===== */
+topic({id:'momentum',ref:'3.4.1.6',name:'Momentum & collisions',short:'Momentum',eyebrow:'Momentum',title:'Collisions and conservation of momentum',
+ intro:'Two trolleys collide on a track. Change their masses and velocities and the type of collision. Momentum is always conserved; kinetic energy only sometimes.',animated:true,
+ bar:'positive = to the right',aspect:0.4,minH:200,
+ segs:[{id:'mm-type',opts:[['1','Elastic'],['0.5','Inelastic'],['0','Stick together']]}],
+ controls:[{id:'mm-m1',label:'Mass of A',min:0.5,max:5,step:0.1,value:2,fmt:v=>fmt(v,1)+' kg'},{id:'mm-u1',label:'Velocity of A',min:0,max:4,step:0.1,value:3,fmt:v=>fmt(v,1)+' m s⁻¹'},
+  {id:'mm-m2',label:'Mass of B',min:0.5,max:5,step:0.1,value:1,fmt:v=>fmt(v,1)+' kg'},{id:'mm-u2',label:'Velocity of B',min:-3,max:3,step:0.1,value:-1,fmt:v=>fmt(v,1)+' m s⁻¹'}],
+ readouts:[{id:'mm-v',label:'velocities after'},{id:'mm-p',label:'total momentum before → after'},{id:'mm-k',label:'total Eₖ before → after'},{id:'mm-lost',label:'Eₖ transferred'}],
+ eqs:['p = mv','Σp before = Σp after','impulse = FΔt = Δ(mv)','elastic: Eₖ conserved'],
+ steps:['<b>Momentum</b> p = mv is a vector: choose a positive direction and give velocities the other way a minus sign.','In a closed system (no external forces) <b>total momentum is conserved</b> in every collision and explosion.',
+  '<b>Elastic</b> collision: total kinetic energy is also conserved. <b>Inelastic</b>: some Eₖ is transferred to heat, sound and deformation.','Newton\'s second law: force = rate of change of momentum, F = Δ(mv)/Δt.',
+  '<b>Impulse</b> = FΔt = change in momentum = area under a force–time graph. Increasing contact time reduces the force (crumple zones, airbags, bending your knees).'],
+ traps:['Forgetting the minus sign for an object moving the other way.','Assuming kinetic energy is conserved: only in elastic collisions.','Explosions start from zero momentum, so the parts move off with equal and opposite momenta.'],
+ tryThis:'make A and B the same mass with B at rest, and choose elastic. What happens to A?'});
+sims.momentum=(()=>{let s={};
+ return{update(){const m1=num('mm-m1'),u1=num('mm-u1'),m2=num('mm-m2'),u2=num('mm-u2'),e=+segVal('mm-type'),P=m1*u1+m2*u2;
+   const v1=(P-m2*e*(u1-u2))/(m1+m2),v2=(P+m1*e*(u1-u2))/(m1+m2);const coll=u1>u2;s={m1,u1,m2,u2,v1:coll?v1:u1,v2:coll?v2:u2,coll};
+   const k0=0.5*m1*u1*u1+0.5*m2*u2*u2,k1=0.5*m1*s.v1**2+0.5*m2*s.v2**2;
+   $('mm-v').textContent=coll?`A ${fmt(s.v1)}, B ${fmt(s.v2)} m s⁻¹`:'no collision';$('mm-p').textContent=`${fmt(P)} → ${fmt(m1*s.v1+m2*s.v2)} kg m s⁻¹`;$('mm-k').textContent=`${fmt(k0)} → ${fmt(k1)} J`;$('mm-lost').textContent=fmt(k0-k1)+' J';},
+  draw(ctx,w,h,t){bg(ctx,w,h);const L=3,sc=(w-40)/L,ty=h*0.62,cw=0.22,x10=0.35,x20=1.7;const tc=s.coll?(x20-(x10+cw))/(s.u1-s.u2):1e9;const T=Math.min(tc,4)+2.2,tt=t%T;
+   let x1,x2;if(tt<tc){x1=x10+s.u1*tt;x2=x20+s.u2*tt}else{x1=x10+s.u1*tc+s.v1*(tt-tc);x2=x20+s.u2*tc+s.v2*(tt-tc)}
+   line(ctx,10,ty,w-10,ty,C.ink,2);const cart=(x,m,col,lab,v)=>{const X=20+x*sc,wid=cw*sc,hh=18+m*6;ctx.fillStyle=col;rrect(ctx,X,ty-hh-8,wid,hh,4);ctx.fill();
+    dot(ctx,X+wid*0.25,ty-4,4,C.ink);dot(ctx,X+wid*0.75,ty-4,4,C.ink);label(ctx,lab,X+wid/2,ty-hh/2-8,C.surface,'center',12,700);if(Math.abs(v)>0.05)arrow(ctx,X+wid/2,ty-hh-20,X+wid/2+v*22,ty-hh-20,col,2,8);label(ctx,fmt(v,1),X+wid/2,ty-hh-34,col,'center',10)};
+   const after=tt>=tc;cart(x1,s.m1,C.accent,'A',after?s.v1:s.u1);cart(x2,s.m2,C.wave2,'B',after?s.v2:s.u2);label(ctx,after?'after collision':'before collision',w-14,16,C.muted,'right',11);}}})();
+Q.momentum=[
+ {m:3,q:`<p>A 1.5 kg trolley at 4.0 m s⁻¹ hits a stationary 0.5 kg trolley and they stick together. Find their common velocity and the kinetic energy lost.</p>`,a:`<div class="work">p = 1.5 × 4.0 = 6.0 kg m s⁻¹
+v = 6.0/2.0 = 3.0 m s⁻¹
+Eₖ: 12 J before, ½ × 2.0 × 3.0² = 9 J after</div><p class="final">3.0 m s⁻¹, 3 J lost</p>`},
+ {m:1,q:`<p>What is an elastic collision?</p>`,a:`<p>A collision in which total kinetic energy is conserved.</p>`},
+ {m:3,q:`<p>A 0.060 kg ball hits a wall at 20 m s⁻¹ and rebounds at 15 m s⁻¹. Contact lasts 0.010 s. Find the average force on the ball.</p>`,a:`<div class="work">Δp = 0.060 × (15 − (−20)) = 2.1 kg m s⁻¹
+F = Δp/Δt = 2.1/0.010</div><p class="final">210 N</p>`},
+ {m:2,q:`<p>Explain how an airbag reduces the force on a driver in a crash.</p>`,a:`<p>The driver's change in momentum is fixed. The airbag increases the time over which it happens, so the rate of change of momentum, F = Δp/Δt, is smaller.</p>`},
+ {m:2,q:`<p>A 4.0 kg rifle fires a 0.010 kg bullet at 400 m s⁻¹. Find the recoil velocity of the rifle.</p>`,a:`<div class="work">0 = 0.010 × 400 + 4.0 v</div><p class="final">v = −1.0 m s⁻¹ (1.0 m s⁻¹ backwards)</p>`}];
+
+/* ===== TERMINAL VELOCITY ===== */
+topic({id:'terminal',ref:'3.4.1.4',name:'Terminal velocity',short:'Terminal',eyebrow:'Newton\'s laws and drag',title:'Drag and terminal velocity',
+ intro:'A skydiver jumps. Watch weight and drag on the free-body diagram while the velocity–time graph builds up. Open the parachute at any moment.',animated:true,
+ bar:'drag = kv² · time runs 3× faster',aspect:0.55,minH:260,
+ controls:[{id:'tv-m',label:'Mass',min:50,max:120,step:1,value:80,fmt:v=>v+' kg'},{id:'tv-k',label:'Drag constant k (body position)',min:0.15,max:0.5,step:0.01,value:0.25,fmt:v=>fmt(v)+' kg m⁻¹'}],
+ extra:`<div class="row"><button class="btn" type="button" id="tv-open">Open parachute</button><button class="btn alt" type="button" id="tv-reset">Restart jump</button></div>`,
+ readouts:[{id:'tv-v',label:'velocity'},{id:'tv-d',label:'drag'},{id:'tv-F',label:'resultant force'},{id:'tv-a',label:'acceleration'},{id:'tv-vt',label:'terminal velocity'}],status:true,
+ eqs:['F = ma','resultant = W − drag','at terminal: drag = W','v_t = √(mg/k) for drag = kv²'],
+ steps:['At the start, v = 0 so drag = 0. The only force is weight: acceleration = g.','As speed increases, <b>drag increases</b>, so the resultant force and the acceleration <b>decrease</b>. The v–t graph gets less steep.',
+  'When drag = weight, the resultant force is zero: the skydiver reaches <b>terminal velocity</b>.','Opening the parachute increases drag enormously: drag > weight, so the resultant force is <b>upwards</b> and the skydiver decelerates.',
+  'As they slow down, drag decreases until it equals weight again: a new, <b>lower</b> terminal velocity.'],
+ traps:['Saying the skydiver moves upwards when the parachute opens. They slow down while still falling.','Saying there is no force at terminal velocity: there is no <b>resultant</b> force.','The gradient of a v–t graph is acceleration; the area under it is displacement.'],
+ tryThis:'increase the mass. How does that change the terminal velocity, and why?'});
+sims.terminal=(()=>{let st={t:0,v:0,open:null,hist:[]};
+ function keff(){const k=num('tv-k');if(st.open===null)return k;return k+(k*100-k)*Math.min(1,(st.t-st.open)/2)}
+ return{init(){$('tv-open').addEventListener('click',()=>{if(st.open===null)st.open=st.t});$('tv-reset').addEventListener('click',()=>{st={t:0,v:0,open:null,hist:[]}})},
+  update(){},
+  step(dt){if(st.t>=60)return;const m=num('tv-m');for(let i=0;i<6;i++){const d=dt*3/6,k=keff(),a=G-k*st.v*st.v/m;st.v+=a*d;st.t+=d}st.hist.push([st.t,st.v]);},
+  draw(ctx,w,h){bg(ctx,w,h);const m=num('tv-m'),k=keff(),W=m*G,D=k*st.v*st.v,F=W-D;
+   $('tv-v').textContent=fmt(st.v,1)+' m s⁻¹';$('tv-d').textContent=fmt(D,0)+' N';$('tv-F').textContent=fmt(Math.abs(F),0)+' N '+(Math.abs(F)<5?'':F>0?'down':'up');$('tv-a').textContent=fmt(F/m,2)+' m s⁻²';$('tv-vt').textContent=fmt(Math.sqrt(W/k),1)+' m s⁻¹';
+   $('terminal-status').innerHTML=st.v<0.5?'<b>Just jumped:</b> only weight acts, so a = g.':Math.abs(F)<0.02*W?'<b>Terminal velocity:</b> drag equals weight, resultant force is zero.':F>0?'<b>Speeding up:</b> weight > drag, but the acceleration is falling as drag grows.':'<b>Slowing down:</b> drag > weight, so the resultant force is upwards.';
+   const fx=w*0.13,fy=h*0.5;ctx.fillStyle=C.ink;rrect(ctx,fx-12,fy-22,24,44,8);ctx.fill();dot(ctx,fx,fy-30,9,C.ink);
+   if(st.open!==null){ctx.strokeStyle=C.wave2;ctx.lineWidth=2;ctx.beginPath();ctx.arc(fx,fy-70,40,Math.PI,0);ctx.stroke();line(ctx,fx-40,fy-70,fx-8,fy-28,C.muted,1);line(ctx,fx+40,fy-70,fx+8,fy-28,C.muted,1)}
+   const s=0.09;arrow(ctx,fx,fy+22,fx,fy+22+W*s,C.accent,3,10);label(ctx,'W',fx+12,fy+22+W*s,C.accent,'left',12,700);
+   if(D>1){const L=Math.min(h*0.45,D*s);arrow(ctx,fx+24,fy,fx+24,fy-L,C.wave2,3,10);label(ctx,'drag',fx+30,fy-L+8,C.wave2,'left',11,700)}
+   const P=Plot(ctx,{x:w*0.32,y:24,w:w*0.64,h:h-60},[0,60],[0,70]);P.axes('t / s','v / m s⁻¹',[10,20,30,40,50,60],[20,40,60]);P.pts(st.hist.map(p=>[p[0],p[1]]),C.accent,2.2);
+   if(st.hist.length)dot(ctx,P.X(st.t),P.Y(st.v),4,C.node);}}})();
+Q.terminal=[
+ {m:3,q:`<p>Explain why a skydiver reaches a terminal velocity.</p>`,a:`<ul><li>Initially only weight acts, so they accelerate at g.</li><li>As speed increases, drag increases, so the resultant force and acceleration decrease.</li><li>Eventually drag = weight: resultant force zero, so velocity is constant.</li></ul>`},
+ {m:3,q:`<p>Describe and explain the motion after the parachute opens.</p>`,a:`<p>Drag suddenly increases above the weight, so there is a resultant upward force and the skydiver decelerates. As speed falls, drag falls until it equals weight again: a new, lower terminal velocity.</p>`},
+ {m:2,q:`<p>An 80 kg skydiver experiences 500 N of drag. Find the acceleration.</p>`,a:`<div class="work">F = 80 × 9.81 − 500 = 285 N
+a = 285/80</div><p class="final">3.6 m s⁻² downwards</p>`},
+ {m:2,q:`<p>Drag on a skydiver is kv² with k = 0.25 kg m⁻¹ and mass 80 kg. Calculate the terminal velocity.</p>`,a:`<div class="work">kv² = mg → v = √(80 × 9.81 / 0.25)</div><p class="final">56 m s⁻¹</p>`},
+ {m:2,q:`<p>A ball bearing is dropped into a tall tube of oil to measure its terminal velocity. How can you check it has reached terminal velocity before timing?</p>`,a:`<p>Use several equally spaced markers (or light gates) and check the time between successive markers is constant.</p>`}];
+
+/* ===== MATERIALS ===== */
+const CUR={ductile:[[0,0],[0.12,0.6],[0.14,0.66],[0.16,0.68],[0.18,0.62],[0.26,0.63],[0.45,0.88],[0.7,1],[0.85,0.93],[0.92,0.84]],
+ brittle:[[0,0],[0.35,0.95]],rubber:[[0,0],[0.1,0.18],[0.25,0.26],[0.45,0.32],[0.65,0.42],[0.8,0.6],[0.9,0.85]],
+ rubberU:[[0.9,0.85],[0.8,0.42],[0.65,0.22],[0.45,0.15],[0.25,0.1],[0.1,0.05],[0,0]],spring:[[0,0],[0.2,8],[0.25,9.3],[0.3,10.2]]};
+function interp(arr,x){for(let i=1;i<arr.length;i++){if(x<=arr[i][0]){const a=arr[i-1],b=arr[i];return a[1]+(b[1]-a[1])*(x-a[0])/(b[0]-a[0])}}return arr[arr.length-1][1]}
+topic({id:'materials',ref:'3.4.2',name:'Stress, strain & springs',short:'Materials',eyebrow:'Bulk properties of solids',title:'Stretching springs and materials',
+ intro:'Load a spring or a sample, step by step. See where Hooke\'s law stops, what happens when you unload, and how much energy is stored.',
+ bar:'',aspect:0.58,minH:270,
+ segs:[{id:'mt-type',opts:[['spring','Spring F–x'],['ductile','Ductile metal'],['brittle','Brittle'],['rubber','Rubber']]}],
+ controls:[{id:'mt-p',label:'Loading',min:0,max:100,step:1,value:35,fmt:v=>v+' %'}],
+ checks:[{id:'mt-un',label:'Unload from here'}],
+ extra:`<div class="tblwrap"><table class="mini" id="mt-tab"></table></div>`,status:true,
+ eqs:['F = kΔL','stress = F/A','strain = ΔL/L','E = stress/strain','energy = ½FΔL','series: 1/k = 1/k₁ + 1/k₂','parallel: k = k₁ + k₂'],
+ steps:['<b>Hooke\'s law</b>: extension ∝ force, up to the <b>limit of proportionality</b>. The gradient of F against ΔL is k.','The <b>elastic limit</b>: beyond it, the material does not return to its original length when unloaded (plastic deformation).',
+  '<b>Stress</b> = F/A (Pa), <b>strain</b> = ΔL/L (no units). The <b>Young modulus</b> is stress/strain: the gradient of the linear part of a stress–strain graph.','Energy stored = <b>area under the force–extension graph</b> = ½FΔL in the linear region.',
+  'Unloading after plastic deformation follows a line <b>parallel</b> to the loading line: the gap left on the x-axis is the permanent extension.','<b>Rubber</b> returns to its original length, but the unloading curve is lower. The area between the curves is energy dissipated as heat (hysteresis).'],
+ traps:['Using diameter instead of radius in A = πr².','Forgetting to convert mm to m for extension or diameter.','Elastic limit and limit of proportionality are close but not the same point.','Brittle materials show no plastic region: they snap.'],
+ tryThis:'take the ductile metal to 60 % and tick "unload from here". How much permanent extension is left?'});
+sims.materials={update(){const ty=segVal('mt-type'),p=num('mt-p')/100,un=$('mt-un').checked;this.ty=ty;this.p=p;this.un=un;
+  $('materials-bar').textContent=ty==='spring'?'k = 40 N m⁻¹ up to 8 N':ty==='rubber'?'force–extension (schematic)':'stress–strain (schematic, elastic region exaggerated)';
+  let rows=[],st='';
+  if(ty==='spring'){const x=0.3*p,F=interp(CUR.spring,x),lin=x<=0.2;rows=[['force',fmt(F,2)+' N'],['extension',fmt(x*100,1)+' cm'],['energy stored',lin?fmt(0.5*F*x,3)+' J (½FΔL)':'area under the curve (more than ½FΔL)']];
+   st=lin?'<b>Obeys Hooke\'s law</b>: F/ΔL = 40 N m⁻¹.':'<b>Past the limit of proportionality</b>: extension grows faster than force.'+(un?' Unloading leaves a permanent extension.':'');}
+  else if(ty==='ductile'){const x=0.92*p;const r=x<=0.12?'Obeys Hooke\'s law: stress ∝ strain':x<=0.14?'Past the limit of proportionality, still elastic':x<=0.18?'Yield point: large strain for little extra stress':x<0.7?'Plastic deformation (work hardening)':x<0.92?'Past the ultimate tensile stress: necking':'Fracture';
+   rows=[['region',r],['returns to original length?',x<=0.14?'yes':'no: permanent extension']];st=`<b>${r}.</b>`}
+  else if(ty==='brittle'){const x=0.35*p;rows=[['region',p<1?'Elastic (obeys Hooke\'s law)':'Fracture'],['plastic region?','none']];st=p<1?'<b>Elastic.</b> Brittle materials obey Hooke\'s law right up to breaking.':'<b>Snapped</b> with no plastic deformation.'}
+  else{rows=[['returns to original length?','yes'],['energy','area under loading curve stored; area between curves becomes heat']];st=un?'<b>Hysteresis:</b> the shaded area between the curves is energy dissipated as heat.':'<b>Loading curve.</b> Tick "unload from here" at 100 % to see the unloading curve.'}
+  $('mt-tab').innerHTML=rows.map(r=>`<tr><th>${r[0]}</th><td>${r[1]}</td></tr>`).join('');$('materials-status').innerHTML=st;},
+ draw(ctx,w,h){bg(ctx,w,h);const ty=this.ty,p=this.p;const sp=ty==='spring';const xr=sp?[0,0.32]:[0,1],yr=sp?[0,11]:[0,1.1];
+  const P=Plot(ctx,{x:52,y:24,w:w-80,h:h-62},xr,yr);P.axes(sp?'extension / m':ty==='rubber'?'extension':'strain',sp?'F / N':ty==='rubber'?'force':'stress',sp?[0.1,0.2,0.3]:[],sp?[2,4,6,8,10]:[],v=>v.toFixed(1));
+  const arr=CUR[ty],xmax=arr[arr.length-1][0],xc=xmax*p,yc=interp(arr,xc);
+  ctx.beginPath();ctx.moveTo(P.X(0),P.Y(0));for(let i=0;i<=80;i++){const x=xc*i/80;ctx.lineTo(P.X(x),P.Y(interp(arr,x)))}
+  const slope=sp?40:arr[1][1]/arr[1][0];const xperm=Math.max(0,xc-yc/slope);
+  if(this.un&&ty!=='rubber'&&ty!=='brittle'){ctx.lineTo(P.X(xperm),P.Y(0))}else ctx.lineTo(P.X(xc),P.Y(0));ctx.closePath();ctx.fillStyle=alpha(C.accent,0.15);ctx.fill();
+  ctx.setLineDash([3,4]);P.curve(x=>interp(arr,x),C.muted,1.2,0,xmax);ctx.setLineDash([]);P.curve(x=>interp(arr,x),C.accent,2.5,0,xc,120);
+  if(ty==='rubber'&&this.un){const U=CUR.rubberU.slice().reverse();ctx.beginPath();ctx.moveTo(P.X(0),P.Y(0));for(let i=0;i<=80;i++){const x=0.9*i/80;ctx.lineTo(P.X(x),P.Y(interp(arr,x)))}for(let i=80;i>=0;i--){const x=0.9*i/80;ctx.lineTo(P.X(x),P.Y(interp(U,x)))}ctx.fillStyle=alpha(C.wave2,0.25);ctx.fill();P.curve(x=>interp(U,x),C.wave2,2.2,0,0.9);label(ctx,'unloading',P.X(0.55),P.Y(0.1),C.wave2,'left',10)}
+  if(this.un&&ty!=='rubber'&&ty!=='brittle'){line(ctx,P.X(xc),P.Y(yc),P.X(xperm),P.Y(0),C.wave2,2.2,[6,4]);if(xperm>0.002){line(ctx,P.X(0),P.Y(0)+10,P.X(xperm),P.Y(0)+10,C.node,2);label(ctx,'permanent extension',P.X(xperm)+6,P.Y(0)-10,C.node,'left',10)}}
+  dot(ctx,P.X(xc),P.Y(yc),6,C.node);
+  if(ty==='ductile'){[[0.12,0.6,'P'],[0.14,0.66,'E'],[0.16,0.68,'Y'],[0.7,1,'UTS'],[0.92,0.84,'B']].forEach(([x,y,l])=>{dot(ctx,P.X(x),P.Y(y),3,C.ink);label(ctx,l,P.X(x)-6,P.Y(y)-10,C.ink,'right',10,700)});
+   label(ctx,'P limit of proportionality · E elastic limit · Y yield point · B breaking point',P.X(0.02),h-8,C.muted,'left',9)}
+  if(sp){dot(ctx,P.X(0.2),P.Y(8),3,C.ink);label(ctx,'limit of proportionality',P.X(0.2)-6,P.Y(8)-12,C.ink,'right',10)}}};
+Q.materials=[
+ {m:2,q:`<p>A spring (k = 40 N m⁻¹) is stretched by 0.15 m within its limit of proportionality. Find the force and the elastic energy stored.</p>`,a:`<div class="work">F = 40 × 0.15 = 6.0 N
+E = ½ × 6.0 × 0.15</div><p class="final">6.0 N, 0.45 J</p>`},
+ {m:2,q:`<p>Two identical springs, each k = 40 N m⁻¹, are connected (a) in series and (b) in parallel. Find the combined spring constant each time.</p>`,a:`<p class="final">(a) 20 N m⁻¹  (b) 80 N m⁻¹</p>`},
+ {m:4,q:`<p>A 2.0 m steel wire of diameter 0.50 mm extends by 4.0 mm under a load of 80 N. Calculate the stress, strain and Young modulus.</p>`,a:`<div class="work">A = π(0.25×10⁻³)² = 1.96 × 10⁻⁷ m²
+stress = 80/1.96×10⁻⁷ = 4.1 × 10⁸ Pa
+strain = 4.0×10⁻³/2.0 = 2.0 × 10⁻³
+E = stress/strain</div><p class="final">2.0 × 10¹¹ Pa</p>`},
+ {m:2,q:`<p>Define the elastic limit and plastic deformation.</p>`,a:`<p><b>Elastic limit:</b> the maximum force (or stress) beyond which the material will not return to its original shape when the force is removed.</p><p><b>Plastic deformation:</b> permanent deformation that remains after the force is removed.</p>`},
+ {m:2,q:`<p>A rubber band is stretched and released. Its unloading curve lies below its loading curve. Explain what the area between the curves represents.</p>`,a:`<p>The energy dissipated (mostly as heat) in one loading–unloading cycle. Rubber still returns to its original length, so this is not plastic deformation.</p>`}];
+
+/* ===== PRACTICE ===== */
+Q.practice=[
+ {t:'mc',m:1,q:`<p>A car accelerates uniformly from rest at 2.5 m s⁻² for 8.0 s. How far does it travel?</p><ol class="opts"><li>20 m</li><li>40 m</li><li>80 m</li><li>160 m</li></ol>`,a:`<p class="final">C</p><div class="work">s = ½ × 2.5 × 8.0² = 80 m</div>`},
+ {t:'projectiles',m:2,q:`<p>A car brakes from 25 m s⁻¹ to rest in 50 m. Find the deceleration and the time taken.</p>`,a:`<div class="work">v² = u² + 2as → 0 = 625 + 100a → a = −6.25 m s⁻²
+t = (v − u)/a = 25/6.25</div><p class="final">6.25 m s⁻², 4.0 s</p>`},
+ {t:'terminal',m:2,q:`<p>State what the gradient and the area of a velocity–time graph represent.</p>`,a:`<p>Gradient = acceleration; area under the graph = displacement.</p>`},
+ {t:'moments',m:3,q:`<p>A crane lifts 500 kg through 12 m in 20 s. Find the useful power output. If the crane is 60 % efficient, find the input power.</p>`,a:`<div class="work">P = mgh/t = 500 × 9.81 × 12 / 20 = 2.94 kW
+input = 2.94/0.60</div><p class="final">2.9 kW, 4.9 kW</p>`},
+ {t:'momentum mc',m:1,q:`<p>Which is a unit of impulse?</p><ol class="opts"><li>N s⁻¹</li><li>N s</li><li>kg m s⁻²</li><li>J s</li></ol>`,a:`<p class="final">B</p>`},
+ {t:'projectiles',m:2,q:`<p>A pendulum bob is released 0.20 m above its lowest point. Find its speed at the bottom (no energy losses).</p>`,a:`<div class="work">mgh = ½mv² → v = √(2 × 9.81 × 0.20)</div><p class="final">2.0 m s⁻¹</p>`},
+ {t:'moments',m:2,q:`<p>A sledge is pulled 20 m by a rope at 30° above the horizontal with tension 50 N. Find the work done.</p>`,a:`<div class="work">W = Fs cos θ = 50 × 20 × cos 30°</div><p class="final">870 J</p>`},
+ {t:'moments',m:3,q:`<p>A 2.0 kg block rests on a 25° slope without sliding. Find the friction force and the normal reaction.</p>`,a:`<div class="work">friction = mg sin 25° = 2.0 × 9.81 × 0.423
+normal = mg cos 25° = 2.0 × 9.81 × 0.906</div><p class="final">8.3 N up the slope, 18 N</p>`},
+ {t:'momentum',m:2,q:`<p>A book rests on a table. Its weight is one force of a Newton's third law pair. What is the other force?</p>`,a:`<p>The gravitational pull of the <b>book on the Earth</b> (equal size, opposite direction, same type of force, acting on a different body). Not the normal reaction from the table.</p>`},
+ {t:'projectiles mc',m:1,q:`<p>Two balls leave a table edge at the same time: one dropped, one thrown horizontally. Ignoring air resistance:</p><ol class="opts"><li>the dropped ball lands first</li><li>the thrown ball lands first</li><li>they land at the same time</li><li>it depends on their masses</li></ol>`,a:`<p class="final">C</p>`},
+ {t:'projectiles',m:4,q:`<p>A ball is thrown at 20 m s⁻¹ at 35° above horizontal from a height of 1.5 m. Find how far away it lands.</p>`,a:`<div class="work">u_y = 11.5 m s⁻¹ ; uₓ = 16.4 m s⁻¹
+−1.5 = 11.5t − 4.905t²
+t = (11.5 + √(11.5² + 4 × 4.905 × 1.5))/9.81 = 2.46 s
+x = 16.4 × 2.46</div><p class="final">40 m</p>`},
+ {t:'projectiles',m:3,q:`<p>A driver at 20 m s⁻¹ has a reaction time of 0.70 s and brakes at 6.5 m s⁻². Find the total stopping distance.</p>`,a:`<div class="work">thinking = 20 × 0.70 = 14 m
+braking = 20²/(2 × 6.5) = 30.8 m</div><p class="final">45 m</p>`},
+ {t:'terminal mc',m:1,q:`<p>At t = 0 on the velocity–time graph of a falling object released from rest, the gradient equals:</p><ol class="opts"><li>0</li><li>g</li><li>the terminal velocity</li><li>drag/mass</li></ol>`,a:`<p class="final">B</p>`},
+ {t:'materials',m:2,q:`<p>Explain how to find the energy stored in a stretched material when its force–extension graph is curved.</p>`,a:`<p>Find the area under the graph: count squares (or split into shapes), then multiply by the energy each square represents (force per square × extension per square).</p>`},
+ {t:'materials mc',m:1,q:`<p>What are the units of strain?</p><ol class="opts"><li>Pa</li><li>N m⁻²</li><li>m</li><li>no units</li></ol>`,a:`<p class="final">D</p>`},
+ {t:'momentum',m:3,q:`<p>A 1200 kg car at 15 m s⁻¹ collides with a stationary 800 kg car and they move off together. Find the common velocity and the kinetic energy transferred.</p>`,a:`<div class="work">v = 1200 × 15 / 2000 = 9.0 m s⁻¹
+Eₖ before = ½ × 1200 × 15² = 135 kJ
+Eₖ after = ½ × 2000 × 9.0² = 81 kJ</div><p class="final">9.0 m s⁻¹, 54 kJ</p>`},
+ {t:'moments',m:2,q:`<p>Define efficiency and give its equation in terms of power.</p>`,a:`<p>The fraction of input energy (or power) that is usefully transferred. efficiency = useful power out ÷ total power in.</p>`},
+ {t:'materials',m:2,q:`<p>The Young modulus of copper is 1.3 × 10¹¹ Pa. A copper wire is under a stress of 6.5 × 10⁷ Pa. Find the strain.</p>`,a:`<div class="work">strain = stress/E = 6.5×10⁷ / 1.3×10¹¹</div><p class="final">5.0 × 10⁻⁴</p>`},
+ {t:'materials extended',m:6,q:`<p>Describe how to determine the Young modulus of a metal wire (Required Practical 4). Include measurements, how to reduce uncertainty and how to analyse the data.</p>`,a:`<p><b>Level 3 answer covers:</b></p><ul><li>Long thin wire (≥ 2 m) clamped at one end, over a pulley, with a marker against a fixed ruler (or a comparison wire with vernier scale).</li><li>Measure original length L with a metre rule/tape; diameter with a micrometer at several points and orientations; average.</li><li>Add masses in equal steps; record extension each time; check unloading returns to zero (still elastic).</li><li>Plot stress against strain (or F against ΔL); gradient = E (or gradient × L/A).</li><li>Long wire → bigger extension → lower % uncertainty; thin wire → larger stress.</li><li>Safety: goggles in case the wire snaps; sand tray under masses.</li></ul>`},
+ {t:'projectiles extended',m:6,q:`<p>Describe how to determine g from a falling object (Required Practical 3). Include apparatus, measurements, analysis and how to reduce errors.</p>`,a:`<p><b>Level 3 answer covers:</b></p><ul><li>Steel ball held by an electromagnet above a trapdoor (or a light gate); timer starts when the magnet is switched off and stops at the trapdoor.</li><li>Measure height h from the bottom of the ball to the trapdoor with a metre rule; vary h over 5+ values; repeat each time and average.</li><li>s = ½gt²: plot h against t²; gradient = g/2, so g = 2 × gradient.</li><li>Electronic timing removes reaction-time error; a small dense ball reduces air resistance.</li><li>A delay in releasing the ball (magnet residual field) gives a systematic error: shows as an intercept, gradient unaffected.</li></ul>`},
+ {t:'momentum',m:2,q:`<p>A force–time graph for a ball being kicked is a triangle of height 400 N and base 0.010 s. The ball's mass is 0.45 kg and starts at rest. Find its speed after the kick.</p>`,a:`<div class="work">impulse = area = ½ × 400 × 0.010 = 2.0 N s
+v = 2.0/0.45</div><p class="final">4.4 m s⁻¹</p>`}];
+
+/* ---------- build page ---------- */
+(function build(){
+  const S=SECTION;
+  const ctlHTML=c=>`<div class="ctl"><label for="${c.id}">${c.label} <output id="${c.id}-o"></output></label><input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}"></div>`;
+  const segHTML=s=>`<div class="seg" id="${s.id}">${s.opts.map((o,i)=>`<button type="button" aria-pressed="${i===(s.sel||0)}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+  const chkHTML=c=>`<label class="check"><input type="checkbox" id="${c.id}"${c.checked?' checked':''}> ${c.label}</label>`;
+  const panel=t=>`
+<section class="panel" role="tabpanel" data-panel="${t.id}" hidden>
+  <div class="panel-head"><div><div class="eyebrow">${t.eyebrow}</div><h2>${t.title}</h2><p>${t.intro}</p></div></div>
+  <div class="lab">
+    <div class="scope">
+      <div class="scope-bar"><span id="${t.id}-bar">${t.bar||''}</span>${t.animated?`<button class="pause" type="button" data-pause="${t.id}">Pause</button>`:''}</div>
+      <canvas id="c-${t.id}" aria-label="${t.canvasLabel||t.title}"></canvas>
+      ${(t.segs||t.checks)?`<div class="toggles">${(t.segs||[]).map(segHTML).join('')}${(t.checks||[]).map(chkHTML).join('')}</div>`:''}
+      ${t.controls?`<div class="controls">${t.controls.map(ctlHTML).join('')}</div>`:''}
+      ${t.extra?`<div class="extra">${t.extra}</div>`:''}
+      ${t.readouts?`<dl class="readout">${t.readouts.map(r=>`<div${r.wide?' style="grid-column:1/-1"':''}><dt>${r.label}</dt><dd id="${r.id}"></dd></div>`).join('')}</dl>`:''}
+      ${t.status?`<div class="status" id="${t.id}-status"></div>`:''}
+    </div>
+    <div class="notes">
+      <div class="eqbox"><h3>${t.eqTitle||'Key equations'}</h3><div class="eq">${t.eqs.map(e=>`<span>${e}</span>`).join('')}</div></div>
+      <div><h3>Breaking it down</h3><ol class="steps">${t.steps.map(s=>`<li><div>${s}</div></li>`).join('')}</ol></div>
+      <div class="traps"><h3>Common traps</h3><ul>${t.traps.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      ${t.tryThis?`<p class="try"><b>Try this:</b> ${t.tryThis}</p>`:''}
+    </div>
+  </div>
+  <div class="qhead"><h3>Questions: ${t.name.toLowerCase()}</h3><p>Turn a card over to check your answer.</p></div>
+  <div class="qgrid" data-qset="${t.id}"></div>
+</section>`;
+  const chips=[['all','All'],['mc','Multiple choice'],...TOPICS.map(t=>[t.id,t.short||t.name]),['extended','6-mark']];
+  document.getElementById('app').innerHTML=`
+<div class="wrap"><header class="top">
+  <div class="eyebrow">AQA A-level Physics 7408 · ${S.code}</div>
+  <h1>${S.title}</h1><p class="lede">${S.lede}</p></header></div>
+<nav class="tabs" aria-label="Topics"><div class="wrap"><div class="tabrow" role="tablist" id="tablist">
+  ${TOPICS.map(t=>`<button class="tab" type="button" role="tab" data-tab="${t.id}"><span class="ref">${t.ref}</span><span class="nm">${t.name}</span></button>`).join('')}
+  <button class="tab practice" type="button" role="tab" data-tab="practice"><span class="ref">Mixed</span><span class="nm">Exam practice</span></button>
+</div></div></nav>
+<main class="wrap">
+${TOPICS.map(panel).join('')}
+<section class="panel" role="tabpanel" data-panel="practice" hidden>
+  <div class="panel-head"><div><div class="eyebrow">Mixed exam-style questions</div><h2>Exam practice</h2>
+  <p>A-level style questions across ${S.name}: multiple choice, calculations, explanations and extended response. Write your answer down first, then turn the card over to mark it.</p></div></div>
+  <div class="filters" id="filters">${chips.map((c,i)=>`<button class="chip" type="button" aria-pressed="${i===0}" data-f="${c[0]}">${c[1]}</button>`).join('')}
+    <span class="tally" id="tally"></span><button class="ghost" type="button" id="reset">Turn all cards back</button></div>
+  <div class="qgrid" data-qset="practice"></div>
+</section>
+</main>
+<div class="wrap"><footer>${S.footer||'Built for AQA 7408 revision. Data and formulae as on the AQA data and formulae booklet.'}</footer></div>`;
+})();
+
+/* ---------- question cards ---------- */
+function card(item,idx,lab){
+  const el=document.createElement('article');el.className='qcard';el.dataset.tags=item.t||'';
+  el.innerHTML=`<div class="qmeta"><span class="side">${lab} ${idx+1}</span><span class="mk">${item.m} mark${item.m>1?'s':''}</span></div>
+    <div class="qbody front">${item.q}</div>
+    <div class="qbody ans back" hidden><div class="tagline" style="margin-bottom:6px">Answer</div>${item.a}</div>
+    <button class="flip" type="button">Show answer</button>`;
+  const btn=el.querySelector('.flip'),front=el.querySelector('.front'),back=el.querySelector('.back'),side=el.querySelector('.side');
+  btn.addEventListener('click',()=>{const show=back.hidden;back.hidden=!show;front.hidden=show;el.classList.toggle('flipped',show);
+    btn.textContent=show?'Back to question':'Show answer';side.textContent=(show?'Answer ':lab+' ')+(idx+1);});
+  return el;}
+document.querySelectorAll('[data-qset]').forEach(g=>{const set=g.dataset.qset;(Q[set]||[]).forEach((it,i)=>g.appendChild(card(it,i,set==='practice'?'P':'Q')))});
+const pgrid=document.querySelector('[data-qset="practice"]');
+function applyFilter(f){let n=0,marks=0;pgrid.querySelectorAll('.qcard').forEach((c,i)=>{const show=f==='all'||c.dataset.tags.split(' ').includes(f);c.hidden=!show;if(show){n++;marks+=Q.practice[i].m}});
+  $('tally').textContent=`${n} questions · ${marks} marks`;}
+$('filters').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));applyFilter(b.dataset.f)});
+$('reset').addEventListener('click',()=>pgrid.querySelectorAll('.qcard.flipped .flip').forEach(b=>b.click()));
+applyFilter('all');
+
+/* ---------- theme ---------- */
+readTokens();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTokens)}catch(e){}
+new MutationObserver(readTokens).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class','style']});
+
+/* ---------- wire controls ---------- */
+TOPICS.forEach(t=>{const s=sims[t.id]||{};const upd=()=>{(t.controls||[]).forEach(c=>setOut(c.id,c.fmt?c.fmt(+$(c.id).value):$(c.id).value));s.update&&s.update()};
+  (t.controls||[]).forEach(c=>$(c.id).addEventListener('input',upd));
+  (t.checks||[]).forEach(c=>$(c.id).addEventListener('change',upd));
+  (t.segs||[]).forEach(sg=>$(sg.id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setSeg(sg.id,b.dataset.v);s.onSeg&&s.onSeg(sg.id,b.dataset.v);upd()}));
+  s.init&&s.init();upd();t._upd=upd;});
+
+/* ---------- tabs + animation ---------- */
+const tabs=[...document.querySelectorAll('.tab')];let active=TOPICS[0].id;const times={},paused={};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function show(id,push){if(!document.querySelector(`[data-panel="${id}"]`))id=TOPICS[0].id;active=id;
+  tabs.forEach(t=>{const on=t.dataset.tab===id;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1});
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.panel!==id);
+  if(push&&location.hash!=='#'+id){try{history.replaceState(null,'','#'+id)}catch(e){}}
+  const t=tabs.find(t=>t.dataset.tab===id);t&&t.scrollIntoView({block:'nearest',inline:'nearest'});
+  drawActive();}
+tabs.forEach(t=>t.addEventListener('click',()=>{show(t.dataset.tab,true);window.scrollTo({top:0})}));
+$('tablist').addEventListener('keydown',e=>{const i=tabs.findIndex(t=>t.dataset.tab===active);let j=i;
+  if(e.key==='ArrowRight')j=(i+1)%tabs.length;else if(e.key==='ArrowLeft')j=(i-1+tabs.length)%tabs.length;else return;
+  e.preventDefault();show(tabs[j].dataset.tab,true);tabs[j].focus();});
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+document.querySelectorAll('[data-pause]').forEach(b=>{const k=b.dataset.pause;paused[k]=reduce;b.textContent=reduce?'Play':'Pause';
+  b.addEventListener('click',()=>{paused[k]=!paused[k];b.textContent=paused[k]?'Play':'Pause'})});
+function drawActive(){const s=sims[active],t=TOPICS.find(x=>x.id===active);if(!s||!s.draw)return;const cv=$('c-'+active);
+  const{ctx,w,h}=sizeCanvas(cv,t.aspect||0.55,t.minH||240);s.draw(ctx,w,h,times[active]||0);}
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const s=sims[active],t=TOPICS.find(x=>x.id===active);
+  if(s&&t){if(t.animated&&!paused[active]){times[active]=(times[active]||0)+dt;s.step&&s.step(dt,times[active])}drawActive()}
+  requestAnimationFrame(loop)}
+show(location.hash.slice(1)||TOPICS[0].id);requestAnimationFrame(loop);
+
+</script>
+
+</body></html>
